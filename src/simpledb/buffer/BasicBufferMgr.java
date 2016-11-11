@@ -1,5 +1,7 @@
 package simpledb.buffer;
 
+import java.util.PriorityQueue;
+
 import simpledb.file.*;
 
 /**
@@ -9,6 +11,7 @@ import simpledb.file.*;
  */
 class BasicBufferMgr {
    private Buffer[] bufferpool;
+//   PriorityQueue<Buffer>
    private int numAvailable;
    
    /**

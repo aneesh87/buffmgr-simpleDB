@@ -21,6 +21,7 @@ public class LogMgr implements Iterable<BasicLogRecord> {
     * A value of 0 means that the pointer is the first value in the page.
     */
    public static final int LAST_POS = 0;
+   //For each 
 
    private String logfile;
    private Page mypage = new Page();
@@ -83,13 +84,14 @@ public class LogMgr implements Iterable<BasicLogRecord> {
     * @return the LSN of the final value
     */
    public synchronized int append(Object[] rec) {
-      int recsize = INT_SIZE;  // 4 bytes for the integer that points to the previous log record
+      int recsize = 2*INT_SIZE;  // 8 bytes for the integer that points to the previous log record and integer that points to the next log record
       for (Object obj : rec)
          recsize += size(obj);
       if (currentpos + recsize >= BLOCK_SIZE){ // the log record doesn't fit,
          flush();        // so move to the next block.
          appendNewBlock();
       }
+      initializeRecord(recsize);
       for (Object obj : rec)
          appendVal(obj);
       finalizeRecord();
@@ -147,6 +149,15 @@ public class LogMgr implements Iterable<BasicLogRecord> {
       setLastRecordPosition(0);
       currentpos = INT_SIZE;
       currentblk = mypage.append(logfile);
+   }
+   
+   /**
+    * TODO
+    * @param size
+    */
+   private void initializeRecord(int size) {
+	   mypage.setInt(currentpos, currentpos+size);
+	   currentpos+=INT_SIZE;
    }
 
    /**

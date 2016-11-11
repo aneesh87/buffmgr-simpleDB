@@ -67,7 +67,7 @@ public class RecoveryMgr {
       if (isTempBlock(blk))
          return -1;
       else
-         return new SetIntRecord(txnum, blk, offset, oldval).writeToLog();
+         return new SetIntRecord(txnum, blk, offset, oldval, newval).writeToLog();
    }
 
    /**
@@ -84,7 +84,7 @@ public class RecoveryMgr {
       if (isTempBlock(blk))
          return -1;
       else
-         return new SetStringRecord(txnum, blk, offset, oldval).writeToLog();
+         return new SetStringRecord(txnum, blk, offset, oldval, newval).writeToLog();
    }
 
    /**
@@ -115,16 +115,30 @@ public class RecoveryMgr {
     * or the end of the log.
     */
    private void doRecover() {
-      Collection<Integer> finishedTxs = new ArrayList<Integer>();
+      Collection<Integer> rolledBackTxs = new ArrayList<Integer>();
+      Collection<Integer> committedTxs = new ArrayList<Integer>();
       Iterator<LogRecord> iter = new LogRecordIterator();
+      
+      //undo phase
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
          if (rec.op() == CHECKPOINT)
             return;
-         if (rec.op() == COMMIT || rec.op() == ROLLBACK)
-            finishedTxs.add(rec.txNumber());
-         else if (!finishedTxs.contains(rec.txNumber()))
+         if (rec.op() == COMMIT)
+            committedTxs.add(rec.txNumber());
+         else if (rec.op() == ROLLBACK)
+        	 rolledBackTxs.add(rec.txNumber());
+         else if (!committedTxs.contains(rec.txNumber()) && !rolledBackTxs.contains(rec.txNumber()))
             rec.undo(txnum);
+      }
+      
+      //redo phase
+      while(iter.hasNext()) {
+    	  LogRecord rec = iter.next();
+    	  if (!(rec.op() == COMMIT || rec.op() == ROLLBACK)) {
+    		  if (committedTxs.contains(rec.txNumber()))
+    			  rec.redo(rec.txNumber());
+    	  }
       }
    }
 
