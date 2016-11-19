@@ -19,6 +19,7 @@ public class RecoveryMgr {
     */
    public RecoveryMgr(int txnum) {
       this.txnum = txnum;
+      //hi
       new StartRecord(txnum).writeToLog();
    }
 
