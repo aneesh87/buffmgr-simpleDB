@@ -10,10 +10,14 @@ import java.util.Iterator;
  * 
  * @author Edward Sciore
  */
-class LogIterator implements Iterator<BasicLogRecord> {
+//made the class public
+public class LogIterator implements Iterator<BasicLogRecord> {
    private Block blk;
    private Page pg = new Page();
    private int currentrec;
+   
+   //need this variable
+   private int LastBlockNumber;
    
    /**
     * Creates an iterator for the records in the log file,
@@ -27,6 +31,13 @@ class LogIterator implements Iterator<BasicLogRecord> {
       currentrec = pg.getInt(LogMgr.LAST_POS);
    }
    
+   //constructor for forward scanning. The current rec line changed
+   LogIterator(Block blk,boolean fwd) {
+	      this.blk = blk;
+	      pg.read(blk);
+	      currentrec = LogMgr.LAST_POS + INT_SIZE;
+   }
+   
    /**
     * Determines if the current log record
     * is the earliest record in the log file.
@@ -34,6 +45,12 @@ class LogIterator implements Iterator<BasicLogRecord> {
     */
    public boolean hasNext() {
       return currentrec>0 || blk.number()>0;
+   }
+   
+   public boolean actualhasNext(){
+	   //WE NEED TO STORE THE LAST BLOCK NUMBER TOO.
+	   return currentrec>pg.getInt(LogMgr.LAST_POS) && blk.number() == LastBlockNumber;
+	   //return true;
    }
    
    /**
@@ -50,6 +67,15 @@ class LogIterator implements Iterator<BasicLogRecord> {
       return new BasicLogRecord(pg, currentrec+INT_SIZE);
    }
    
+   public BasicLogRecord actualnext(){
+	   if (currentrec > pg.getInt(LogMgr.LAST_POS) && blk.number() != LastBlockNumber){
+		   moveToActualNextBlock();
+	   }
+	   int thisrec = currentrec;
+	   currentrec = pg.getInt(currentrec+INT_SIZE);
+	   return new BasicLogRecord(pg, thisrec+INT_SIZE);
+   }
+   
    public void remove() {
       throw new UnsupportedOperationException();
    }
@@ -62,5 +88,11 @@ class LogIterator implements Iterator<BasicLogRecord> {
       blk = new Block(blk.fileName(), blk.number()-1);
       pg.read(blk);
       currentrec = pg.getInt(LogMgr.LAST_POS);
+   }
+   
+   private void moveToActualNextBlock(){
+	   blk = new Block(blk.fileName(), blk.number()+1);
+	   pg.read(blk);
+	   currentrec = LogMgr.LAST_POS+INT_SIZE; //this is 0+int size which means the second block
    }
 }

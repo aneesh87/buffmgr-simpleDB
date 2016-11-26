@@ -96,6 +96,7 @@ public class RecoveryMgr {
     */
    private void doRollback() {
       Iterator<LogRecord> iter = new LogRecordIterator();
+      //LogRecordIterator iter = new LogRecordIterator(); Not sure if this is necessary no syntax error though.
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
          if (rec.txNumber() == txnum) {
@@ -117,8 +118,13 @@ public class RecoveryMgr {
    private void doRecover() {
       Collection<Integer> rolledBackTxs = new ArrayList<Integer>();
       Collection<Integer> committedTxs = new ArrayList<Integer>();
-      Iterator<LogRecord> iter = new LogRecordIterator();
-      
+      //Iterator<LogRecord> iter = new LogRecordIterator();
+    
+      /*
+       * changed the data type of iter in the below line to support additional operations like
+       * hasactualnext and has actualnext which are not supported by the standard iterator.
+       */
+      LogRecordIterator iter = new LogRecordIterator();
       //undo phase
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
@@ -140,6 +146,16 @@ public class RecoveryMgr {
     			  rec.redo(rec.txNumber());
     	  }
       }
+      
+      //This loop will eventually replace the above while loop after some minor modifications
+      while(iter.actualhasNext())
+      {
+    	  LogRecord rec = iter.actualnext();
+    	  //if record is update record and txnum not in commit list or rollback list
+    	  //rewrite the transaction to the page
+      }
+      //flush the data to disk
+      //create checkpoint.
    }
 
    /**
