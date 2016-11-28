@@ -22,8 +22,8 @@ class LogRecordIterator implements Iterator<LogRecord> {
       return iter.hasNext();
    }
    
-   public boolean actualhasNext(){
-	   return iter.actualhasNext();
+   public boolean hasNextForward(){
+	   return iter.hasNextForward();
    }
    
    /**
@@ -56,8 +56,8 @@ class LogRecordIterator implements Iterator<LogRecord> {
       }
    } 
    
-   public LogRecord actualnext() {
-		BasicLogRecord rec = iter.actualnext();
+   public LogRecord nextForward() {
+		BasicLogRecord rec = iter.nextForward();
 	    int op = rec.nextInt();
 	    switch (op) {
 	    	case CHECKPOINT:

@@ -122,7 +122,7 @@ public class RecoveryMgr {
     
       /*
        * changed the data type of iter in the below line to support additional operations like
-       * hasactualnext and has actualnext which are not supported by the standard iterator.
+       * hasnextforward and has nextforward which are not supported by the standard iterator.
        */
       LogRecordIterator iter = new LogRecordIterator();
       //undo phase
@@ -139,8 +139,8 @@ public class RecoveryMgr {
       }
       
       //redo phase
-      while(iter.actualhasNext()) {
-    	  LogRecord rec = iter.actualnext();
+      while(iter.hasNextForward()) {
+    	  LogRecord rec = iter.nextForward();
     	  if (!(rec.op() == COMMIT || rec.op() == ROLLBACK)) {
     		  if (committedTxs.contains(rec.txNumber()))
     			  rec.redo(rec.txNumber());

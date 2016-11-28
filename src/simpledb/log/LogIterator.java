@@ -48,7 +48,7 @@ public class LogIterator implements Iterator<BasicLogRecord> {
       return currentrec>0 || blk.number()>0;
    }
    
-   public boolean actualhasNext(){
+   public boolean hasNextForward(){
 	   //WE NEED TO STORE THE LAST BLOCK NUMBER TOO.
 	   return currentrec < pg.getInt(LogMgr.LAST_POS) || blk.number() < LastBlockNumber;
    }
@@ -67,9 +67,9 @@ public class LogIterator implements Iterator<BasicLogRecord> {
       return new BasicLogRecord(pg, currentrec+INT_SIZE+INT_SIZE);
    }
    
-   public BasicLogRecord actualnext(){
+   public BasicLogRecord nextForward(){
 	   if (currentrec == pg.getInt(LogMgr.LAST_POS) && blk.number() < LastBlockNumber){
-		   moveToActualNextBlock();
+		   moveToNextForwardBlock();
 	   }
 	   //move current rec forward. then use the last four bytes to return the basic log record. 
 	   int thisrec = currentrec;
@@ -91,7 +91,7 @@ public class LogIterator implements Iterator<BasicLogRecord> {
       currentrec = pg.getInt(LogMgr.LAST_POS);
    }
    
-   private void moveToActualNextBlock(){
+   private void moveToNextForwardBlock(){
 	   blk = new Block(blk.fileName(), blk.number()+1);
 	   pg.read(blk);
 	   currentrec = LogMgr.LAST_POS; //this is 0+int size which means the second block
