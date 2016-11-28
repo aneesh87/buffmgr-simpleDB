@@ -126,12 +126,10 @@ public class RecoveryMgr {
        */
       LogRecordIterator iter = new LogRecordIterator();
       //undo phase
-      System.out.println("Undoing");
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
-         System.out.println(rec.op());
          if (rec.op() == CHECKPOINT)
-            return;
+            break;
          if (rec.op() == COMMIT)
             committedTxs.add(rec.txNumber());
          else if (rec.op() == ROLLBACK)
@@ -141,10 +139,8 @@ public class RecoveryMgr {
       }
       
       //redo phase
-      System.out.println("Redoing");
       while(iter.actualhasNext()) {
     	  LogRecord rec = iter.actualnext();
-    	  System.out.println(rec.op());
     	  if (!(rec.op() == COMMIT || rec.op() == ROLLBACK)) {
     		  if (committedTxs.contains(rec.txNumber()))
     			  rec.redo(rec.txNumber());
