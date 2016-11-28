@@ -95,8 +95,8 @@ public class RecoveryMgr {
     * until it finds the transaction's START record.
     */
    private void doRollback() {
-      Iterator<LogRecord> iter = new LogRecordIterator();
-      //LogRecordIterator iter = new LogRecordIterator(); Not sure if this is necessary no syntax error though.
+      //Iterator<LogRecord> iter = new LogRecordIterator();
+      LogRecordIterator iter = new LogRecordIterator(); //Not sure if this is necessary no syntax error though.
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
          if (rec.txNumber() == txnum) {
@@ -126,8 +126,10 @@ public class RecoveryMgr {
        */
       LogRecordIterator iter = new LogRecordIterator();
       //undo phase
+      System.out.println("Undoing");
       while (iter.hasNext()) {
          LogRecord rec = iter.next();
+         System.out.println(rec.op());
          if (rec.op() == CHECKPOINT)
             return;
          if (rec.op() == COMMIT)
@@ -139,21 +141,26 @@ public class RecoveryMgr {
       }
       
       //redo phase
-      while(iter.hasNext()) {
-    	  LogRecord rec = iter.next();
+      System.out.println("Redoing");
+      while(iter.actualhasNext()) {
+    	  LogRecord rec = iter.actualnext();
+    	  System.out.println(rec.op());
     	  if (!(rec.op() == COMMIT || rec.op() == ROLLBACK)) {
     		  if (committedTxs.contains(rec.txNumber()))
     			  rec.redo(rec.txNumber());
     	  }
       }
       
-      //This loop will eventually replace the above while loop after some minor modifications
-      while(iter.actualhasNext())
-      {
-    	  LogRecord rec = iter.actualnext();
-    	  //if record is update record and txnum not in commit list or rollback list
-    	  //rewrite the transaction to the page
-      }
+      
+//      //This loop will eventually replace the above while loop after some minor modifications
+//      while(iter.actualhasNext())
+//      {
+//    	  LogRecord rec = iter.actualnext();
+//    	  //if record is update record and txnum not in commit list or rollback list
+//    	  //rewrite the transaction to the page
+//      }
+      
+      
       //flush the data to disk
       //create checkpoint.
    }

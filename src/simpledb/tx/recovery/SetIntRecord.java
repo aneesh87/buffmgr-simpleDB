@@ -21,7 +21,7 @@ class SetIntRecord implements LogRecord {
       this.blk = blk;
       this.offset = offset;
       this.val = val;
-      this.newval = val;
+      this.newval = newval;
    }
 
    /**
