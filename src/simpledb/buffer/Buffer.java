@@ -1,6 +1,9 @@
 package simpledb.buffer;
 
 import simpledb.server.SimpleDB;
+
+import java.util.Date;
+
 import simpledb.file.*;
 
 /**
@@ -19,7 +22,7 @@ public class Buffer {
    private int pins = 0;
    private int modifiedBy = -1;  // negative means not modified
    private int logSequenceNumber = -1; // negative means no corresponding log record
-   private long lastmodified = -1; //negative means not modified
+   private long lastReplaceTime = Long.MIN_VALUE;
 
    /**
     * Creates a new buffer, wrapping a new 
@@ -173,7 +176,14 @@ public class Buffer {
       contents.read(blk);
       pins = 0;
    }
-
+   
+   void setReplaceTime() {
+	   lastReplaceTime = new Date().getTime();	   
+   }
+   
+   long getReplaceTime() {
+	   return lastReplaceTime;
+   }
    /**
     * Initializes the buffer's page according to the specified formatter,
     * and appends the page to the specified file.
@@ -187,5 +197,15 @@ public class Buffer {
       fmtr.format(contents);
       blk = contents.append(filename);
       pins = 0;
+   }
+   
+   String printBufferBlock() {
+	  String s;    
+	  if (this.block() != null) {
+	      s = this.block().fileName() + ":" + this.block().number() + "\n";
+	  } else {
+		  s = "Empty Buffer\n";
+	  }
+	  return s;
    }
 }

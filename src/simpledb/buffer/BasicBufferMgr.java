@@ -1,6 +1,7 @@
 package simpledb.buffer;
 
-import java.util.PriorityQueue;
+import java.util.HashMap;
+import java.util.Map;
 
 import simpledb.file.*;
 
@@ -11,8 +12,8 @@ import simpledb.file.*;
  */
 class BasicBufferMgr {
    private Buffer[] bufferpool;
-//   PriorityQueue<Buffer>
    private int numAvailable;
+   private Map<Block, Buffer> bufferPoolMap;
    
    /**
     * Creates a buffer manager having the specified number 
@@ -32,6 +33,8 @@ class BasicBufferMgr {
       numAvailable = numbuffs;
       for (int i=0; i<numbuffs; i++)
          bufferpool[i] = new Buffer();
+      
+      bufferPoolMap = new HashMap<Block, Buffer>();
    }
    
    /**
@@ -59,10 +62,20 @@ class BasicBufferMgr {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
             return null;
+         System.out.println("Pin: Replace" + buff.printBufferBlock());
+         
+         buff.printBufferBlock();
+         bufferPoolMap.remove(buff.block());
+         
          buff.assignToBlock(blk);
+         System.out.println("Pin: New :" + buff.printBufferBlock());
+         buff.setReplaceTime();
+         bufferPoolMap.put(blk,  buff);
       }
-      if (!buff.isPinned())
+      if (!buff.isPinned()) {
          numAvailable--;
+         System.out.println("Pinned again:" + buff.printBufferBlock());
+      }
       buff.pin();
       return buff;
    }
@@ -80,9 +93,19 @@ class BasicBufferMgr {
       Buffer buff = chooseUnpinnedBuffer();
       if (buff == null)
          return null;
+      
+      bufferPoolMap.remove(buff.block());
+      
+      System.out.println("pinNew f(x): Replace" + buff.printBufferBlock());
+      
       buff.assignToNew(filename, fmtr);
       numAvailable--;
       buff.pin();
+      
+      System.out.println("pinNew: First Pin" + buff.printBufferBlock());
+      
+      buff.setReplaceTime();
+      bufferPoolMap.put(buff.block(), buff);
       return buff;
    }
    
@@ -92,8 +115,10 @@ class BasicBufferMgr {
     */
    synchronized void unpin(Buffer buff) {
       buff.unpin();
-      if (!buff.isPinned())
+      if (!buff.isPinned()) {
          numAvailable++;
+         System.out.println("unpinned:" + buff.printBufferBlock());
+      }
    }
    
    /**
@@ -105,18 +130,47 @@ class BasicBufferMgr {
    }
    
    private Buffer findExistingBuffer(Block blk) {
+	  
+	  Buffer buffer = bufferPoolMap.get(blk);	  
+	  if (buffer != null) {
+		  //System.out.println("hashMap:" + buffer.printBufferBlock());
+		  return buffer;
+	  } else {
+	       //System.out.println("hashMap:NULL");
+	       return null;
+	  }
+
+	  /*
       for (Buffer buff : bufferpool) {
          Block b = buff.block();
-         if (b != null && b.equals(blk))
-            return buff;
+         if (b != null && b.equals(blk)) {
+        	 //System.out.println("linear:" + buffer.printBufferBlock());
+        	 return buff;
+         }
       }
+      //System.out.println("linear:NULL");
       return null;
+      */
    }
    
    private Buffer chooseUnpinnedBuffer() {
-      for (Buffer buff : bufferpool)
-         if (!buff.isPinned())
+    /*  for (Buffer buff : bufferpool)
+         if (!buff.isPinned())  
          return buff;
       return null;
+   }*/
+	
+	    long earliestTime = Long.MAX_VALUE;
+	    Buffer earliestbuff = null;
+	
+        for (Buffer buff : bufferpool) {
+             if (!buff.isPinned()) {
+         	     if (buff.getReplaceTime() < earliestTime) {
+         		     earliestTime = buff.getReplaceTime();
+         		     earliestbuff = buff;
+         	     }
+             }	     
+	     }
+         return earliestbuff;
    }
 }
