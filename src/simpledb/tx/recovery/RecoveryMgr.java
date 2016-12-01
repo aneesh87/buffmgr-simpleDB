@@ -135,7 +135,9 @@ public class RecoveryMgr {
          else if (rec.op() == ROLLBACK)
         	 rolledBackTxs.add(rec.txNumber());
          else if (!committedTxs.contains(rec.txNumber()) && !rolledBackTxs.contains(rec.txNumber()))
-            rec.undo(txnum);
+         {	
+        	 rec.undo(txnum);
+         }
       }
       
       //redo phase
@@ -143,7 +145,9 @@ public class RecoveryMgr {
     	  LogRecord rec = iter.nextForward();
     	  if (!(rec.op() == COMMIT || rec.op() == ROLLBACK)) {
     		  if (committedTxs.contains(rec.txNumber()))
+    		  {
     			  rec.redo(rec.txNumber());
+    		  }
     	  }
       }
       

@@ -62,19 +62,19 @@ class BasicBufferMgr {
          buff = chooseUnpinnedBuffer();
          if (buff == null)
             return null;
-         System.out.println("Pin: Replace" + buff.printBufferBlock());
+//         System.out.println("Pin: Replace" + buff.printBufferBlock());
          
          buff.printBufferBlock();
          bufferPoolMap.remove(buff.block());
          
          buff.assignToBlock(blk);
-         System.out.println("Pin: New :" + buff.printBufferBlock());
+//         System.out.println("Pin: New :" + buff.printBufferBlock());
          buff.setReplaceTime();
          bufferPoolMap.put(blk,  buff);
       }
       if (!buff.isPinned()) {
          numAvailable--;
-         System.out.println("Pinned again:" + buff.printBufferBlock());
+//         System.out.println("Pinned again:" + buff.printBufferBlock());
       }
       buff.pin();
       return buff;
@@ -96,13 +96,13 @@ class BasicBufferMgr {
       
       bufferPoolMap.remove(buff.block());
       
-      System.out.println("pinNew f(x): Replace" + buff.printBufferBlock());
+//      System.out.println("pinNew f(x): Replace" + buff.printBufferBlock());
       
       buff.assignToNew(filename, fmtr);
       numAvailable--;
       buff.pin();
       
-      System.out.println("pinNew: First Pin" + buff.printBufferBlock());
+//      System.out.println("pinNew: First Pin" + buff.printBufferBlock());
       
       buff.setReplaceTime();
       bufferPoolMap.put(buff.block(), buff);
@@ -117,7 +117,7 @@ class BasicBufferMgr {
       buff.unpin();
       if (!buff.isPinned()) {
          numAvailable++;
-         System.out.println("unpinned:" + buff.printBufferBlock());
+//         System.out.println("unpinned:" + buff.printBufferBlock());
       }
    }
    
