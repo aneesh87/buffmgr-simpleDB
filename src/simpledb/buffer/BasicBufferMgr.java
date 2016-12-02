@@ -64,7 +64,7 @@ class BasicBufferMgr {
             return null;
 //         System.out.println("Pin: Replace" + buff.printBufferBlock());
          
-         buff.printBufferBlock();
+//         buff.printBufferBlock();
          bufferPoolMap.remove(buff.block());
          
          buff.assignToBlock(blk);
